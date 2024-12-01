@@ -10,3 +10,11 @@ counter = "0.6.0"
 [[bin]]
 name = "a1"
 path = "src/a1/run.rs"
+
+[[bin]]
+name = "a2"
+path = "src/a2/run.rs"
+
+[[bin]]
+name = "regexexample"
+path = "src/regexexample/run.rs"

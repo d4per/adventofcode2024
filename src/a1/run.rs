@@ -16,7 +16,6 @@ fn part1() {
             
             list1.push(first.unwrap().parse::<u64>().unwrap());
             list2.push(second.unwrap().parse::<u64>().unwrap());
-            
         });
 
     list1.sort();

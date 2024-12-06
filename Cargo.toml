@@ -28,6 +28,9 @@ path = "src/a4/run.rs"
 name = "a5"
 path = "src/a5/run.rs"
 
+[[bin]]
+name = "a6"
+path = "src/a6/run.rs"
 
 [[bin]]
 name = "regexexample"

@@ -1,7 +1,7 @@
 
 use regex::Regex;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 struct File {
     position: u64,
     id: Option<u64>,
@@ -49,22 +49,74 @@ fn main() {
 
     println!("{:?}", &files);
 
-    loop {
-        let (last_file, ff, is_done) = remove_last_file(&files);
-        if is_done {
-            println!("last {:?}", &files);
-            calculate_checksum(&files);
+    // part 1
+    // loop {
+    //     let (last_file, ff, is_done) = remove_last_file(&files);
+    //     if is_done {
+    //         println!("last {:?}", &files);
+    //         calculate_checksum(&files);
+    //
+    //         break;
+    //     }
+    //     files = ff;
+    //     let (_, ff) = merge_file(&last_file, &files);
+    //     files = ff;
+    //     //print(&files);
+    // }
 
-            break;
-        }
-        files = ff;
-        let (_, ff) = merge_file(&last_file, &files);
-        files = ff;
+    // part 2
+    let mut work_list = files.clone();
+    'outer: loop {
+        let files = work_list.clone();
         //print(&files);
+        'big: for file in files.iter().rev() {
+            if file.id.is_some() {
+                //try merge
+                for empty in files.iter() {
+                    if empty == file {
+                        //done with this file
+                        continue 'big;
+                    }
+                    if empty.id.is_none() {
+                        if empty.length >= file.length {
+                            let mut copy: Vec<File> = Vec::new();
+                            //copy merge
+                            for f in files.iter() {
+                                if f == empty {
+                                    let mut fclone = file.clone();
+                                    fclone.position = empty.position;
+                                    copy.push(fclone);
+                                    if empty.length > file.length {
+                                        copy.push(File::new(None, empty.position + file.length, empty.length - file.length));
+                                    }
+                                } else  if f == file {
+                                    //insert space where the original file was
+                                    copy.push(File::new(None, file.position, file.length));
+                                } else {
+                                    //copy all else
+                                    copy.push(*f)
+                                }
+                            }
+                            work_list = copy.clone();
+                            continue 'outer;
+                        }
+                    }
+                }
+
+
+            }
+        }
+        break;
 
     }
-    
-    
+
+    print(&work_list);
+    calculate_checksum(&work_list);
+    //16108706523781
+    //17202538925546 //to high
+    //15912048962023 //to high
+    //6427424893268
+    //6427437134372
 }
 
 fn print(file_list: &Vec<File>) {

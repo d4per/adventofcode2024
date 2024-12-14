@@ -1,3 +1,4 @@
+use std::cmp::max;
 use std::collections::{HashSet, VecDeque};
 use itertools::Itertools;
 use regex::Regex;
@@ -44,34 +45,75 @@ impl Region {
         self.area() * self.perimeter()
     }
 
-    fn sides(&self) -> usize {
-        let mut map: Vec<Vec<char>> = Vec::new();
-        let max_x = self.region_points.iter().map(|p| p.0).max().unwrap();
-        let max_y = self.region_points.iter().map(|p| p.1).max().unwrap();
-        for y in 0..=max_y {
-            let mut v = Vec::new();
-            for x in 0..=max_x {
-                v.push('.');
-            }
-            map.push(v);
-        }
+    fn price2(&self) -> usize {
+        self.area() * self.sides()
+    }
 
+    fn sides(&self) -> usize {
+        let mut vertical_map: HashSet<(i32, i32)> = HashSet::new();
+        let mut horizontal_map: HashSet<(i32, i32)> = HashSet::new();
 
         let directions = vec![(-1,0, '|'), (1,0, '|'), (0,-1, '-'), (0,1, '-')];
-        let mut tot_perimeters = 0;
+
         for p in self.region_points.clone() {
             for d in directions.iter() {
                 let n = (p.0 + d.0, p.1 + d.1);
                 if self.region_points.contains(&n) {
                     //no perimeter this way
                 } else {
-                    map[n.1][n.0] = d.2;
+                    let dx = if d.0 <= 0 { 0 } else { 1 };
+                    let dy = if d.1 <= 0 { 0 } else { 1 };
+                    if d.0.abs() > 0 {
+                        //horizontal
+                        horizontal_map.insert((p.0 + dx, p.1 + dy));
+                    } else {
+                        //vertical
+                        vertical_map.insert((p.0 + dx, p.1 + dy));
+                    }
                 }
             }
         }
-        todo!()
+
+        let mut tot_perimeters = 0;
+        let max_hx = horizontal_map.iter().map(|(x,y)| x).max().unwrap();
+        let max_hy = horizontal_map.iter().map(|(x,y)| y).max().unwrap();
+        let mut found = false;
+        for y in -2..=(*max_hy+2) {
+            for x in -2..=(*max_hx+2) {
+                let contains = horizontal_map.contains(&(x, y));
+                match (contains, found) {
+                    (false, false) => {},
+                    (false, true) => {
+                        found = false;
+                        tot_perimeters += 1;
+                    },
+                    (true, _) => {
+                        found = true;
+                    }
+                }
+            }
+        }
 
 
+        let max_vx = vertical_map.iter().map(|(x,y)| x).max().unwrap();
+        let max_vy = vertical_map.iter().map(|(x,y)| y).max().unwrap();
+        for x in -2..=(*max_vx+2) {
+            for y in -2..=(*max_vy+2) {
+                let contains = vertical_map.contains(&(x, y));
+                match (contains, found) {
+                    (false, false) => {},
+                    (false, true) => {
+                        found = false;
+                        tot_perimeters += 1;
+                    },
+                    (true, _) => {
+                        found = true;
+                    }
+                }
+            }
+        }
+
+        tot_perimeters
     }
 
 }
@@ -137,12 +179,16 @@ impl GardenMap {
         self.regions.iter().map(|r| r.price()).sum()
     }
 
+    fn tot_price2(&self) -> usize {
+        self.regions.iter().map(|r| r.price2()).sum()
+    }
+
 }
 
 
 fn main() {
 
-    let map: Vec<Vec<char>> = include_str!("input.txt")
+    let map: Vec<Vec<char>> = include_str!("test.txt")
         .split("\n")
         .map(|l| l.chars().collect())
         .collect();
@@ -153,8 +199,9 @@ fn main() {
     garden_map.find_regions();
 
     let tot_price = garden_map.tot_price();
-    println!("{:?}", tot_price);
+    println!("part 1: {:?}", tot_price);
 
-
-
+    let tot_price2 = garden_map.tot_price2();
+    println!("part 2: {:?}", tot_price2);
+    //1077954 too high
 }

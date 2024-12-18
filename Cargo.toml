@@ -75,6 +75,14 @@ name = "a17"
 path = "src/a17/run.rs"
 
 [[bin]]
+name = "a18"
+path = "src/a18/run.rs"
+
+[[bin]]
+name = "a19"
+path = "src/a19/run.rs"
+
+[[bin]]
 name = "regexexample"
 path = "src/regexexample/run.rs"
 
